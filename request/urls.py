@@ -13,4 +13,8 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('request/change_application_status/<int:pk>/', views.change_application_status, name='change_application_status'),
     path('request/', views.change_application, name='change_application'),
+
+    path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/requests/', views.RequestListCreateView.as_view(), name='request-list-create'),
+    path('api/requests/<int:pk>/', views.RequestRetrieveUpdateDestroyView.as_view(), name='request-detail'),
     ]

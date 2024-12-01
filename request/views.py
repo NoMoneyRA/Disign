@@ -2,8 +2,14 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .models import Request, Category
 from .forms import RequestForm, CategoryForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import RequestSerializer, RequestPartialUpdateSerializer
 
 
 def index(request):
@@ -13,6 +19,7 @@ def index(request):
         'completed_requests': completed_requests,
         'in_progress_count': in_progress_count
     })
+
 
 @login_required
 def application_list(request):
@@ -31,6 +38,7 @@ def application_list(request):
     }
     return render(request, 'application_list.html', context)
 
+
 @login_required
 def application_create(request):
     if request.method == 'POST':
@@ -43,6 +51,7 @@ def application_create(request):
         form = RequestForm()
 
     return render(request, 'application_create.html', {'form': form})
+
 
 def register(request):
     if request.method == 'POST':
@@ -61,8 +70,6 @@ def change_category(request):
     return render(request, 'change_category.html', {'categories': categories})
 
 
-
-
 @staff_member_required
 def add_category(request):
     if request.method == 'POST':
@@ -74,6 +81,7 @@ def add_category(request):
         form = CategoryForm()
     return render(request, 'add_category.html', {'form': form})
 
+
 @staff_member_required
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
@@ -82,12 +90,14 @@ def delete_category(request, pk):
         return redirect('change_category')
     return render(request, 'delete_category.html', {'category': category})
 
+
 @login_required
 def dashboard(request):
     user_role = 'Администратор' if request.user.is_staff else 'Пользователь'
     return render(request, 'dashboard.html', {
         'user_role': user_role
     })
+
 
 @staff_member_required
 def change_application_status(request, pk):
@@ -131,3 +141,43 @@ def delete_application(request, pk):
         return redirect('application_list')
 
     return redirect('application_list')
+
+
+class RequestListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        requests = Request.objects.all()
+        serializer = RequestSerializer(requests, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = RequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class RequestRetrieveUpdateDestroyView(APIView):
+    def get(self, request, pk):
+        request_obj = Request.objects.get(pk=pk)
+        serializer = RequestSerializer(request_obj)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        request_obj = Request.objects.get(pk=pk)
+        serializer = RequestPartialUpdateSerializer(request_obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk):
+        request_obj = Request.objects.get(pk=pk)
+        request_obj.delete()
+        return Response(status=204)
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    permission_classes = (AllowAny,)
