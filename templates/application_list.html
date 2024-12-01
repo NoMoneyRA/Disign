@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/requests.css' %}">
+
+{% block title %}Мои заявки{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Мои заявки</h1>
+
+    <div class="status-filter">
+        <a href="{% url 'application_list' %}?status=all" class="{% if not request.GET.status or request.GET.status == 'all' %}active{% endif %}">Все</a>
+        <a href="{% url 'application_list' %}?status=new" class="{% if request.GET.status == 'new' %}active{% endif %}">Новые</a>
+        <a href="{% url 'application_list' %}?status=in_progress" class="{% if request.GET.status == 'in_progress' %}active{% endif %}">В работе</a>
+        <a href="{% url 'application_list' %}?status=completed" class="{% if request.GET.status == 'completed' %}active{% endif %}">Выполненные</a>
+    </div>
+
+    <table class="request-table">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Название</th>
+                <th>Категория</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request_obj in requests %}
+                <tr>
+                    <td>{{ request_obj.created_at }}</td>
+                    <td>{{ request_obj.title }}</td>
+                    <td>{{ request_obj.category.name }}</td>
+                    <td>{{ request_obj.get_status_display }}</td>
+                    <td>
+                        {% if user.is_staff and request_obj.status != 'completed' %}
+                            <a href="{% url 'change_application_status' request_obj.id %}" class="btn btn-primary">Изменить статус</a>
+                        {% endif %}
+                        <form method="post" action="{% url 'delete_application' request_obj.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">Заявки не найдены.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

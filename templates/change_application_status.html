@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменить статус заявки{% endblock %}
+
+{% block content %}
+<h1>Изменить статус заявки</h1>
+
+<p><strong>Название:</strong> {{ request_obj.title }}</p>
+<p><strong>Описание:</strong> {{ request_obj.description }}</p>
+<p><strong>Текущий статус:</strong> {{ request_obj.get_status_display }}</p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="status">Выберите новый статус:</label>
+    <select name="status" id="status">
+        {% if request_obj.status == 'new' %}
+            <option value="in_progress" {% if request_obj.status == 'in_progress' %}selected{% endif %}>Принято в работу</option>
+        {% endif %}
+        {% if request_obj.status == 'new' or request_obj.status == 'in_progress' %}
+            <option value="completed" {% if request_obj.status == 'completed' %}selected{% endif %}>Выполнено</option>
+        {% endif %}
+    </select>
+
+    <div id="completed-image-field" style="display: none; margin-top: 10px;">
+        <label for="completed_image">Прикрепите изображение для завершённой заявки:</label>
+        <input type="file" name="completed_image" id="completed_image">
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Изменить статус</button>
+</form>
+
+{% if error %}
+    <p style="color: red; margin-top: 10px;">{{ error }}</p>
+{% endif %}
+
+<a href="{% url 'change_application' %}" class="btn btn-secondary" style="margin-top: 10px;">Назад</a>
+
+<script>
+    const statusField = document.getElementById('status');
+    const imageField = document.getElementById('completed-image-field');
+
+    function toggleImageField() {
+        if (statusField.value === 'completed') {
+            imageField.style.display = 'block';
+        } else {
+            imageField.style.display = 'none';
+        }
+    }
+    toggleImageField();
+    statusField.addEventListener('change', toggleImageField);
+</script>
+{% endblock %}

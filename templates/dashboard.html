@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<h1>Профиль пользователя</h1>
+
+<p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><strong>Группа:</strong> {{ user_role }}</p>
+
+{% if user.is_staff %}
+<h2>Администраторские функции</h2>
+<a href="{% url 'change_category' %}">Управление категориями</a>
+{% endif %}
+{% endblock %}

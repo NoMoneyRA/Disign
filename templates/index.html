@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<h1>Добро пожаловать!</h1>
+
+<h2>Выполненные заявки:</h2>
+<ul>
+    {% for request in completed_requests %}
+        <li>
+            <strong>{{ request.title }}</strong> - {{ request.category.name }}<br>
+            <img src="{{ request.image.url }}" alt="Фото" style="max-width: 200px;">
+            <p>Дата: {{ request.created_at }}</p>
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Заявок в работе: {{ in_progress_count }}</h3>
+{% endblock %}

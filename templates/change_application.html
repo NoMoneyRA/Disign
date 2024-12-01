@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление заявками{% endblock %}
+
+{% block content %}
+<h1>Управление заявками</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Категория</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request_obj in requests %}
+            <tr>
+                <td>{{ request_obj.id }}</td>
+                <td>{{ request_obj.title }}</td>
+                <td>{{ request_obj.category.name }}</td>
+                <td>{{ request_obj.get_status_display }}</td>
+                <td>
+                    {% if request_obj.status != 'completed' %}
+                        <a href="{% url 'change_application_status' request_obj.id %}">Изменить статус</a>
+                    {% else %}
+                        Завершена
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">Заявки отсутствуют.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'dashboard' %}">Назад</a>
+{% endblock %}
